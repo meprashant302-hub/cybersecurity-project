@@ -1,34 +1,41 @@
-# Image Steganography Tool (Python)
+# Image Steganography Tool
 
-A command-line tool that hides secret text messages inside PNG images
-using **LSB (Least Significant Bit)** encoding, extracts hidden messages
-back out, and includes a basic detection/analysis mode to flag images
-that likely contain hidden data.
+A simple Python command-line tool that hides text inside PNG images using **LSB (Least Significant Bit) steganography**.
 
-## What this project demonstrates
-- Understanding of steganography vs. cryptography (hiding existence of
-  data vs. hiding its content)
-- Bit-level manipulation and binary encoding
-- Basic steganalysis (detection) thinking — relevant for VAPT/forensics roles
-- Simple obfuscation (XOR) layered on top of steganography for extra credit
+The tool can:
 
-## How it works (good to know for interviews)
+* Hide a text message inside an image
+* Extract the hidden message
+* Hide text from a file
+* Use a password with XOR-based obfuscation
+* Analyze an image for possible hidden data
 
-Every pixel in an image is made of Red, Green, Blue values (0–255 each).
-Changing only the **last bit** of each value shifts the color by at most
-1 out of 255 — completely invisible to the human eye. This tool converts
-your secret message into binary and hides one bit per color channel:
+## Tech Used
 
+* Python
+* Pillow
+* LSB Steganography
+* Basic image and bit manipulation
+
+## How It Works
+
+The tool changes the last bit of the RGB values of pixels to store the message.
+
+For example, if a pixel has:
+
+```text
+R = 200 → 11001000
+G = 150 → 10010110
+B = 90  → 01011010
 ```
-Original pixel:  R=200 (11001000)  G=150 (10010110)  B=90 (01011010)
-Secret bits:            1                 0                1
-Modified pixel:  R=201 (11001001)  G=150 (10010110)  B=91 (01011011)
-```
 
-A special delimiter (`#####END#####`) marks where the hidden message
-ends, so extraction knows when to stop reading.
+The last bit of these values can be changed to store information. The change is very small, so it is normally not visible when looking at the image.
 
-## Setup
+A special marker is added at the end of the message so that the extraction process knows where the hidden message ends.
+
+## Installation
+
+Install Pillow using:
 
 ```bash
 pip install Pillow
@@ -36,54 +43,47 @@ pip install Pillow
 
 ## Usage
 
-**Hide a message:**
+### 1. Hide a message
+
 ```bash
 python stego_tool.py hide -i cover.png -o secret.png -m "Your secret message"
 ```
 
-**Hide the contents of a text file:**
+### 2. Hide text from a file
+
 ```bash
 python stego_tool.py hide -i cover.png -o secret.png -f message.txt
 ```
 
-**Hide a message with password protection (XOR obfuscation):**
+### 3. Hide a message with a password
+
 ```bash
 python stego_tool.py hide -i cover.png -o secret.png -m "Top secret" --password "mypass123"
 ```
 
-**Extract a hidden message:**
+### 4. Extract a message
+
 ```bash
 python stego_tool.py extract -i secret.png
-python stego_tool.py extract -i secret.png --password "mypass123"   # if password was used
 ```
 
-**Analyze an image for likely hidden data (detection mode):**
+If a password was used:
+
+```bash
+python stego_tool.py extract -i secret.png --password "mypass123"
+```
+
+### 5. Analyze an image
+
 ```bash
 python stego_tool.py analyze -i secret.png
 ```
 
-## Important notes
-- **Use PNG images only.** JPEG uses lossy compression, which destroys
-  LSB data. Always save cover/output images as PNG.
-- Larger images can hide more data — a 500×500 image can hold roughly
-  90,000 characters at maximum capacity (in practice, keep messages
-  well under that for reliability).
-- The password feature uses a simple **XOR cipher** — this is for
-  educational demonstration, not production-grade encryption. If you
-  want to extend this into a stronger project, combine it with AES
-  encryption (encrypt the message first, then hide the ciphertext).
+The analyze command checks the distribution of LSBs and also looks for the message marker. It is only a basic check and should not be considered a complete steganalysis tool.
 
-## The "analyze" command — what it actually checks
-This is a simplified educational steganalysis check: it measures how
-close an image's least-significant-bit distribution is to a random
-50/50 split. LSB steganography pushes this ratio close to 50%, so
-images noticeably close to that split are flagged as suspicious. It
-also attempts a direct extraction to see if the delimiter is present.
-Real steganalysis tools (e.g., StegExpose, zsteg) use more advanced
-statistical methods — mention this as a known limitation if asked.
+## Example
 
-## Sample Output
-```
+```text
 ✓ Message hidden successfully in 'secret.png'
   Message length: 52 characters
   Image capacity used: 0.43%
@@ -93,15 +93,36 @@ statistical methods — mention this as a known limitation if asked.
 This is a secret cybersecurity project test message!
 ```
 
-## Resume Bullet
-> "Built a Python steganography tool implementing LSB (Least Significant
-> Bit) encoding to embed and extract hidden text within PNG images;
-> added password-based XOR obfuscation and a basic statistical
-> steganalysis module to detect likely LSB-modified images."
+## Important Notes
 
-## Possible Extensions
-- Replace XOR with real AES encryption (via the `cryptography` library)
-  before hiding the message
-- Support hiding files/images inside images, not just text
-- Build a simple GUI (Tkinter) or web frontend for drag-and-drop use
-- Add audio-file steganography (hide data in .wav files) as a bonus module
+* Use **PNG images** for this project. JPEG compression can destroy the hidden data.
+* Larger images can store more data.
+* The password option currently uses a simple **XOR operation**. It is included for learning purposes and is **not secure encryption**.
+* The analyze feature is a basic implementation and can produce false positives or miss some hidden data.
+
+## What I Learned
+
+While building this project, I worked with:
+
+* Binary and bit-level operations
+* Image processing using Pillow
+* Reading and writing image pixels
+* Basic steganography concepts
+* Simple statistical analysis for detecting possible hidden data
+* Command-line argument handling in Python
+
+## Future Improvements
+
+Some improvements I would like to make:
+
+* Add AES encryption before hiding the message
+* Support hiding files instead of only text
+* Add a simple GUI
+* Improve the image analysis/detection method
+* Add support for other types of media
+
+## Resume Description
+
+**Image Steganography Tool — Python**
+
+Built a Python-based tool that uses LSB steganography to hide and extract text from PNG images, with password-based XOR obfuscation and a basic LSB analysis feature for detecting possible hidden data.
